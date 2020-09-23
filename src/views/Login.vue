@@ -16,6 +16,11 @@
 					<label>密码</label>
 					<el-input type="text" v-model="ruleForm.password" minlength='6' maxlength='20'></el-input>
 				</el-form-item>
+				<!--此处v-show会有bug 因为登陆隐藏重复密码 但是还是要验证 用v-if就不会 -->
+				<el-form-item prop="passwords" class='form-item' v-show= "mode ==='register'">
+					<label>重复密码</label>
+					<el-input type="text" v-model="ruleForm.passwords" minlength='6' maxlength='20'></el-input>
+				</el-form-item>
 
 				<el-form-item prop="code" class='form-item' >
 					<label for="">验证码</label>
@@ -41,16 +46,16 @@
 </template>
 
 <script>
-	import {_email,_inputValue} from '@/utils/validate.js'
+	import {_email,_inputValue,validate_email,validate_password,validate_code} from '@/utils/validate.js'
 	export default {
 		data() {
 			//验证邮箱
 			var validateUsername = (rule, value, callback) => {
+				//过滤非法字符
 				this.ruleForm.username = value = _email(value) 
-				let  reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/
 				if (value === '') {
 					callback(new Error('邮箱不能为空'));
-				} else if(!reg.test(value)){
+				} else if(!validate_email(value)){
 					callback(new Error('邮箱格式不正确'))
 				} else {
 					callback();
@@ -58,47 +63,61 @@
 			}
 			//验证密码
 			var validatePassword= (rule, value, callback) => {
-				console.log(_inputValue(value))
-				//过滤非法字符
 				this.ruleForm.password = value = _inputValue(value) 
 				
-				let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
 				if (value === '') {
 					callback(new Error('请再次输入密码'))
-				} else if (!reg.test(value)) {
-					callback(new Error('密码为6至20位有效数字和字母'))
+				} else if (!validate_password(value)) {
+					callback(new Error('密码为6至20位数字+字母'))
 				} else {
 					callback()
 				}
 			}
 			//验证验证码
 			var checkCode = (rule, value, callback) => {
-				
 				this.ruleForm.code = value = _inputValue(value) 
-				let reg = /^[0-9]{4}$/
+				
 				if (value === '') {
 					callback(new Error('请输入验证码'))
-				} else if (!reg.test(value)) {
+				} else if (!validate_code(value)) {
 					callback(new Error('验证码为4为数字'))
 				} else {
 					callback()
 				}
 			}
-			
+			//验证重复密码
+			var validatePasswords = (rule, value, callback) => {
+				//如果mode等于login的话 需要跳过
+				if(this.mode ==='login') {
+					callback()
+				}
+				this.ruleForm.passwords = value = _inputValue(value) 
+				
+				if (value === '') {
+					callback(new Error('请输入重复密码'))
+				} else if (value!=this.ruleForm.password) {
+					callback(new Error('两次密码不一致'))
+				} else {
+					callback()
+				}
+			}
 			return {
 				menuTab: [{
 						text: '登陆',
-						current: false
+						current: false,
+						type:'login'
 					},
 					{
 						text: '注册',
-						current: true
+						current: true,
+						type:'register'
 					}
 				],
 				ruleForm: {
 					username: '',
 					password: '',
-					code: ''
+					code: '',
+					passwords:''
 				},
 				rules: {
 					username: [{
@@ -112,9 +131,14 @@
 					code: [{
 						validator: checkCode,
 						trigger: 'blur'
-					}]
-				}
-
+					}],
+					passwords: [{
+						validator: validatePasswords,
+						trigger: 'blur'
+					}],
+				},
+				//显示的模块
+				mode:'login'
 			}
 		},
 		methods: {
@@ -123,6 +147,8 @@
 					item.current = false
 				})
 				currentItem.current = true
+				//修改模块
+				this.mode = currentItem.type
 			},
 			//提交表单
 			submitForm(formName) {

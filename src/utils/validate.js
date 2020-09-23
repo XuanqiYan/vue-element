@@ -19,4 +19,23 @@ export const _email = (s) => {
 	return rs;
 }
 
+/*
+	验证邮箱
+*/
+export const validate_email  = value => {
+	return /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/.test(value)
+}
+/* 
+	验证密码
+*/
+export const validate_password  = value => {
+	return /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/.test(value)
+}
+/*
+	验证code
+*/
+export const validate_code  = value => {
+	return  /^[0-9]{4}$/.test(value)
+}
+
 
