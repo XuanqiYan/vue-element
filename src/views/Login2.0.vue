@@ -46,16 +46,13 @@
 </template>
 
 <script>
-	import {reactive,ref,isRef,toRefs,onMounted} from '@vue/composition-api'
 	import {_email,_inputValue,validate_email,validate_password,validate_code} from '@/utils/validate.js'
 	export default {
-		//存放 data内的数据 生命周期钩子 自定义函数 
-		setup(props,{refs}){
+		data() {
 			//验证邮箱
-			let validateUsername = (rule, value, callback) => {
-				
+			var validateUsername = (rule, value, callback) => {
 				//过滤非法字符
-				ruleForm.username = value = _email(value) 
+				this.ruleForm.username = value = _email(value) 
 				if (value === '') {
 					callback(new Error('邮箱不能为空'));
 				} else if(!validate_email(value)){
@@ -65,8 +62,8 @@
 				}
 			}
 			//验证密码
-			let validatePassword= (rule, value, callback) => {
-				ruleForm.password = value = _inputValue(value) 
+			var validatePassword= (rule, value, callback) => {
+				this.ruleForm.password = value = _inputValue(value) 
 				
 				if (value === '') {
 					callback(new Error('请再次输入密码'))
@@ -77,8 +74,9 @@
 				}
 			}
 			//验证验证码
-			let checkCode = (rule, value, callback) => {
-				ruleForm.code = value = _inputValue(value) 
+			var checkCode = (rule, value, callback) => {
+				this.ruleForm.code = value = _inputValue(value) 
+				
 				if (value === '') {
 					callback(new Error('请输入验证码'))
 				} else if (!validate_code(value)) {
@@ -88,78 +86,75 @@
 				}
 			}
 			//验证重复密码
-			let validatePasswords = (rule, value, callback) => {
+			var validatePasswords = (rule, value, callback) => {
 				//如果mode等于login的话 需要跳过
-				if(mode.value ==='login') {
+				if(this.mode ==='login') {
 					callback()
 				}
-				ruleForm.passwords = value = _inputValue(value) 
+				this.ruleForm.passwords = value = _inputValue(value) 
 				
 				if (value === '') {
 					callback(new Error('请输入重复密码'))
-				} else if (value!=ruleForm.password) {
+				} else if (value!=this.ruleForm.password) {
 					callback(new Error('两次密码不一致'))
 				} else {
 					callback()
 				}
 			}
-			
-			//定义菜单
-			const  menuTab  = reactive([{
-					text: '登陆',
-					current: true,
-					type:'login'
+			return {
+				menuTab: [{
+						text: '登陆',
+						current: false,
+						type:'login'
+					},
+					{
+						text: '注册',
+						current: true,
+						type:'register'
+					}
+				],
+				ruleForm: {
+					username: '',
+					password: '',
+					code: '',
+					passwords:''
 				},
-				{
-					text: '注册',
-					current: false,
-					type:'register'
-				}
-			])
-			//当前模块
-			const mode  = ref('login')
-			//表单数据对象
-			const ruleForm = reactive({
-				username: '',
-				password: '',
-				code: '',
-				passwords:''
-			})
-			//验证规则
-			const rules = reactive({
-				username: [{
-					validator: validateUsername,
-					trigger: 'blur'
-				}],
-				password: [{
-					validator: validatePassword,
-					trigger: 'blur'
-				}],
-				code: [{
-					validator: checkCode,
-					trigger: 'blur'
-				}],
-				passwords: [{
-					validator: validatePasswords,
-					trigger: 'blur'
-				}],
-			})
-			
-			//切换模式函数
-			const toggleMenu = (currentItem => {
-				menuTab.map(item => {
+				rules: {
+					username: [{
+						validator: validateUsername,
+						trigger: 'blur'
+					}],
+					password: [{
+						validator: validatePassword,
+						trigger: 'blur'
+					}],
+					code: [{
+						validator: checkCode,
+						trigger: 'blur'
+					}],
+					passwords: [{
+						validator: validatePasswords,
+						trigger: 'blur'
+					}],
+				},
+				//显示的模块
+				mode:'login'
+			}
+		},
+		methods: {
+			toggleMenu(currentItem) {
+				this.menuTab.map(item => {
 					item.current = false
 				})
 				currentItem.current = true
 				//修改模块
-				mode.value = currentItem.type
-			})
-			//提交实现
-			const submitForm = (formName => {
-				console.log('xxx')
-				
-				refs[formName].validate((validResult, field) => {
-			
+				this.mode = currentItem.type
+			},
+			//提交表单
+			submitForm(formName) {
+				//提交前调用validate方法校验表单所有字段
+				this.$refs[formName].validate((validResult, field) => { // validResult（boolean）校验结果以及未通过校验字段
+
 					if (validResult) {
 						alert('submit!');
 					} else {
@@ -167,17 +162,8 @@
 						return false;
 					}
 				})
-			})
-			
-			return {
-				menuTab,
-				mode,
-				ruleForm,
-				rules,
-				toggleMenu,
-				submitForm
-			}
-			
+			},
+
 		}
 	}
 </script>
@@ -190,8 +176,7 @@
 
 	.login-wrap {
 		width: 330px;
-		margin:auto;
-		
+		margin: auto;
 	}
 
 	.menu-tab {

@@ -7,7 +7,11 @@ import './styles/common.css'
 //引入elementUI
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+
+//导入vue3.0
+import VueCompositionApi from '@vue/composition-api'
 Vue.use(ElementUI)
+Vue.use(VueCompositionApi)
 
 
 Vue.config.productionTip = false
