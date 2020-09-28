@@ -202,7 +202,13 @@
 				}
 				login(LoginData).then(res=>{
 					root.$message.success(res.data.message)
-					console.log(res)
+					
+					//将用户信息保存在本地 
+					localStorage.setItem('ele_login',JSON.stringify(res.data))
+					//跳转首页
+					root.$router.push({
+						name:'Home'
+					})
 				}).catch(error=>{
 					
 				})	
@@ -229,9 +235,11 @@
 					root.$message.error('邮箱不能为空')
 					return  false
 				}
-				//验证码状态控制
-				codeButtonState.value = true
-				codeButtonText.value = '发送中'
+				//更改验证码按钮状态
+				updateCodeButton({
+					state:true,
+					text:'发送中'
+				})
 				
 				timer_for_tab_menu.value = setTimeout(()=>{ //模拟网络延迟
 					getCode({usernmae:ruleForm.username}).then(res=>{
@@ -256,8 +264,11 @@
 					time--
 					if(time === 0){
 						clearInterval(timer.value)
-						codeButtonState.value = false
-						codeButtonText.value = '重新获取验证码'
+						//更改验证码按钮状态
+						updateCodeButton({
+							state:false,
+							text:'再次获取'
+						})
 					}else{
 						codeButtonText.value = `倒计时${time}秒`
 					}
@@ -266,13 +277,20 @@
 			})
 			//还原验证码按钮
 			const clearCountDown = ()=>{
-				//还原定按钮状态 
-				codeButtonState.value = false
-				codeButtonText.value = '获取验证码'
-				
+				//还原验证码按钮状态
+				updateCodeButton({
+					state:false,
+					text:'获取验证码'
+				})
 				clearInterval(timer.value)
 				clearTimeout(timer_for_tab_menu.value)
 			}
+			
+			//更改验证码按钮状态
+			const updateCodeButton = ((params)=>{
+				codeButtonState.value = params.state
+				codeButtonText.value = params.text
+			})
 			
 			return {
 				menuTab,
