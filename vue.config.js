@@ -10,7 +10,17 @@ module.exports = {
 	//es-lint 语法格式检查 
 	lintOnSave: true,
 
-	chainWebpack: (config) => {},
+	chainWebpack: (config) => {
+		const svgRule = config.module.rule("svg");
+		svgRule.uses.clear();     
+		svgRule
+		.use("svg-sprite-loader")
+		.loader("svg-sprite-loader")
+		.options({ 
+			symbolId: "icon-[name]",
+			include: ["./src/icons"] 
+		});
+	},
 	css: {
 		// 是否使用css分离插件 ExtractTextPlugin
 		extract: true,

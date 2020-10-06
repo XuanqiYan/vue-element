@@ -4,7 +4,6 @@ import {Message} from 'element-ui'
 //实例化一个axios对象
 const http = axios.create()
 
-
 //请求拦截器
 http.interceptors.request.use((config) => {
 	/*

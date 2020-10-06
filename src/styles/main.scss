@@ -1,2 +1,6 @@
-@import "./common.scss";
 @import "./config.scss";
+@import "./element.scss";
+@import "./common.scss";
+
+.pull-left{float: left;}
+.pull-right{float: right;}
