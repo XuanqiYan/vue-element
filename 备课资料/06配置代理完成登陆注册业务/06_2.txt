@@ -1,0 +1,9 @@
+//1.promise 讲解
+
+//2.token 获取修改服务器代理配置
+     target: 'http://www.web-jshtml.cn/productapi/',
+     target: 'http://www.web-jshtml.cn/productapi/token', // 这个接口能获取到token  
+
+//3.      
+ 
+  

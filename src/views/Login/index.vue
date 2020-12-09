@@ -207,7 +207,7 @@
 					localStorage.setItem('ele_login',JSON.stringify(res.data))
 					//跳转首页
 					root.$router.push({
-						name:'Home'
+						name:'home'
 					})
 				}).catch(error=>{
 					

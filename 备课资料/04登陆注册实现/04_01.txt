@@ -1,0 +1,75 @@
+1.编写登陆界面外层容器和样式
+    <div id='login'>
+		<div class="login-wrap">
+
+    #login {
+		height: 100vh; // 100% 不好使 --> vh 基于浏览器窗口的百分比处理的
+		background-color: #344a5f;
+	}
+	.login-wrap {
+		width: 330px;
+		margin: auto;
+	}
+    
+
+2.编写ul>li 实现 注册 和登陆
+    <ul class="menu-tab">
+        <li :class='{"current": index==0}' :key='item.id' v-for='item in menuTab' @click='toggleMenu(item)'>{{item.text}}</li>
+    </ul>
+    .menu-tab {
+		text-align: center;
+		li {
+			display: inline-block;
+			width: 88px;
+			line-height: 36px;
+			height: 36px;
+			font-size: 14px;
+			color: #fff;
+			border-radius: 2px;
+			cursor: pointer;
+		}
+
+		.current {
+			background-color: rgba(0, 0, 0, .1)
+		}
+	}
+
+    data(){
+        return {
+            menuTab: [
+                {
+                    text: '登陆',
+                    current: false
+                },
+                {
+                    text: '注册',
+                    current: true
+                }
+			]
+        }
+    }
+
+
+
+3.定义class 实现选中当前的效果  / 参考ppt 讲解 class的绑定方式
+    
+4.点击实现切换 样式             
+    <li @click='toggleMenu(item)'>{{item.text}}</li>
+    toggleMenu(currentItem) {
+        //引用数据 currentItem 和  item 指向同一个对象
+        this.menuTab.map(item => {
+            item.current = false
+        })
+        currentItem.current = true
+    }
+
+5.讲解引用数据类型和 普通数据看类型的区别
+    mounted(){
+        //基本数据类型 参考ppt
+
+        //引用数据类型 参考ppt
+    }
+
+
+
+    

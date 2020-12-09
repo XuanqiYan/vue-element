@@ -1,0 +1,457 @@
+commit: fa9bac9 发送验证码 登陆注册完毕
+
+1. 引入axios
+    npm install axios
+   
+2. 测试axios的get 和 post请求
+    在Onsubmit方法中 测试
+        axios.get
+        axios.post
+    通过控制台 -》 network -> XHR 查看请求状态
+
+
+3. 一般项目中为了后期维护方便不会直接使用 :axios.get / axios.post
+
+    而统一使用axios() 这样的方式 
+    axios({
+        method: 'post',
+        url: '/user/12345',
+        data: {
+            firstName: 'Fred',
+            lastName: 'Flintstone'
+        }
+
+    })
+    axios() 这样的方式最后走的都是 axios.request()的方法
+    所以可以改写成
+    axios.request({
+        method: 'post',
+        url: '/user/12345',
+        data: {
+            firstName: 'Fred',
+            lastName: 'Flintstone'
+        }
+
+    })
+
+4. 设计请求方式
+    a).页面中多个接口请求  把页面中的请求抽离 方便管理   
+        views/login/index.vue --> api/login.js
+        import axios from 'axios'
+
+        /*
+            获取验证码
+        */	
+        export const getCode =(data)=>{
+            //axios.request({})
+        }
+        /*
+            登陆
+        */
+        export const login =(data)=>{
+            ...
+        }
+        /*
+            注册
+        */
+
+        export const register =(data)=>{
+        ....
+        }
+            
+    b).设置请求和相应拦截 
+        意义：
+            请求拦截器 
+                因为在访问后台接口的时候需要验证用户身份 ，如何判断每一个请求的身份，
+                一般会在请求头中携带token，而这个token就是在用户注册的时候后台产生的
+                对该注册用户的标示，对于后台而言通过token就能识别
+            响应拦截
+                对与服务器返回的原始数据进行初步校验，比如返回的状态码对不对
+        如何实现：
+            1/新建/utils/request.js
+
+            2/创建一个设置拦截器的axios对象
+
+                import axios from 'axios'
+                //实例化一个axios对象
+                const http = axios.create()
+                //请求拦截器
+                http.interceptors.request.use((config) => {
+                    return config
+                },(error) => {
+                    // 对请求错误做些什么
+                    return Promise.reject(error)
+                })
+
+                // 添加响应拦截器
+                http.interceptors.response.use((response) => {
+                        // 对响应数据做点什么
+                        return response;
+                }, (error) => {
+                    // 对响应错误做点什么
+                    return Promise.reject(error)
+                })
+                //这个http 就是添加请求和响应拦截的请求对象 
+
+                export default http 
+                
+            3/ 将这个对象试用到接口中即可
+                import axios from '@/utils/request.js'
+
+
+    c).测试请求和响应拦截
+        /* 请求拦截
+            一般在此处在请求头对象内注入向后台注入一些公共参数 
+            token 
+            userId
+            csrf 
+            //手动注入参数
+            config.headers.userId='nice' 
+            console.log('请求对象',config)
+        */
+
+        /*响应拦截
+            //如果返回的状态码不是0 证明请求数据失败
+            if(response.data.resCode==0){
+                Message.error('后台返回的错误信息：'+response.data.message)
+                return Promise.reject(data)
+            }else{
+                return response
+            }
+
+        */
+
+5. 环境变量设置
+    准备：点击获取验证码 ，在方法中调用getCode()接口
+
+    a).login.js中设置请求的接口地址（真实的地址）
+
+        export const getCode =(data)=>{
+            return axios.request({
+                url:'/getSms',
+                method:'post',
+                data:{
+                    username:'123@qq.com',
+                    mode:'login'
+                }
+            })
+        }
+
+    b).点击获取验证码 控制台报错！
+        1.两种环境
+            开发环境 devlopment
+            生产环境 production
+
+        2.打印环境变量
+            每个环境模式都有一个默认的变量：NODE_ENV 
+            console.log(process.env.NODE_ENV) --> devlopment 
+            可以在任意的地方打印这个变量 
+
+        3.自定义环境变量
+            开发环境下在根目录下创建：.env.devlopment
+            生产环境下在根目录下创建：.env.production
+           
+        4..env.devlopment 文件中编写变量 （因为现在是开发环境）
+                VUE_APP_XXX = oooo
+                VUE_APP_OUTPUTDIR = devdist    
+                注意
+                    1.环境变量一般都是键值对
+                    2.VUE_APP_是系统默认的，后面的XXX才是自定义的
+
+        5.测试打印自定义的环境变量
+
+            需要重启项目 --》 console.log(process.env.VUE_APP_XXX)
+
+        6. 这两个文件有啥用处？
+            生产环境和开发环境也许在有些参数和配置上不同，
+            我们就可以在这两个文件中定义相关的变量，而把值对应好，那么就不需要在程序中写大量的判断
+            vue.config.js中
+                //基本路径
+	            publicPath: process.env.NODE_ENV === 'production' ? '' : '/' ,
+                //输出文件路径
+                outputDir: process.env.NODE_ENV === 'production' ? 'dist' : 'devdist',
+                                    ||
+                                    ||
+                                    \/
+                outputDir: process.env.OUT_PUT_DIR    
+
+6. 配置axios的基本请求地址 （/utils/request.js中）
+    a)
+        方式一：
+        const http = axios.create(
+            baseURL:"http://baidu.com",
+            timeout:1000
+        )
+        方式二：
+        axios.defaults.baseURL = "http://baidu.com"
+        
+        测试访问，请求的URL：
+        Request URL: http://baidu.com/getSms
+
+    b)
+        那么我们请求后台的接口也是一个固定的URL: 查看接口文档
+        http://www.web-jshtml.cn/productapi/getSms
+        
+        所以：
+        const http = axios.create(
+            baseURL:" http://www.web-jshtml.cn/productapi/",
+            timeout:1000
+        )
+
+        测试方式：请求URL 地址正确 
+        Request URL:http://www.web-jshtml.cn/productapi/getSms/
+
+        但是点击console报错！！发现不同域名访问出现跨域，需要解决跨域
+    
+
+    c）如何实现 : 后台代理(推荐)  jsonp cros
+        1. 给需要代理的接口增加一个标识
+
+            const BASEURL = process.env.NODE_ENV === 'production' ? '': "/api"
+            //实例化一个axios对象
+            const http = axios.create({
+                baseURL:BASEURL, // http://localhost:8080/api/getSms/
+            })
+
+            给每一个接口请求都加上了表示/api/ 表示这些请求需要代理
+            访问测试：http://localhost:8080/api/getSms/
+
+        2.识别需要代理的请求
+            devServer:{
+                proxy: {                                  
+                    '/api':{} //告诉node, 只要是'/api'开头的请求才用代理
+                }
+            }
+        3. 如何代理
+            devServer: {
+                proxy: {                                  
+                    '/api':{
+                        target:'http://www.web-jshtml.cn/productapi/', //目标访问地址
+
+                        changeOrigin:true,// 在本地会创建一个虚拟服务端，然后发送请求的数据，
+                                        // 并同时接收请求的数据，这样服务端和服务端进行数据的交互就不会有跨域问题
+                        
+                    }
+                }
+            },
+
+            //实际请求就变为：http://www.web-jshtml.cn/productapi/api/getSms
+
+        4. 不对呀！！真实的URL中没有 api
+
+        5.利用pathRewrite 重写url
+
+            devServer: {
+                proxy: {                                 
+                    '/api':{
+                        target:'http://www.web-jshtml.cn/productapi/',
+                        changeOrigin:true,
+                        pathRewrite:{
+                            '^/api':''  //正则表达式 把api 替换为空
+                        }
+                    }
+                }
+            }
+
+            重写完毕后实际的请求地址：http://www.web-jshtml.cn/productapi/getSms
+
+
+        6. 讲解devServer其他参数
+            devServer: {
+                open: true,                                 //配置自动启动浏览器
+                port: 8082,                                 // 端口号
+                logLevel:'debug',                           // 查看代理地址    
+            }
+
+7.对于错误信息统一拦截处理    
+    配置完代理 由于没有写接口参数 所以获取验证码的请求失败 
+    
+    修改request.js
+        import {Message} from 'element-ui'
+
+        http.interceptors.response.use((response) => {
+            //如果返回的状态码不是0 证明请求数据失败
+            if(response.data.resCode!=0){
+                Message.error('后台返回的错误信息：'+response.data.message)
+                return Promise.reject(data)
+            }else{
+                return response
+            }
+
+        }, (error) => {
+            // 对响应错误做点什么
+            return Promise.reject(error)
+        })
+
+8.编写获取验证码相关逻辑 （参考代码）
+
+    a)发送验证码之前登陆按钮禁用  :dispabled='buttonState' 
+    b)定义登陆按钮和验证码按钮相关状态   
+    	//登陆注册按钮禁用状态
+        const buttonState = ref(true)
+        //验证码发送中禁用
+        const codeButtonState = ref(false)
+        const codeButtonText = ref('获取验证码')
+
+
+    c)点击获取验证码业务
+        // 点击获取    
+        const getValitedCode =(()=>{
+            //1.请求验证码邮箱不能为空
+            if(ruleForm.username== ''){
+                root.$message.error('邮箱不能为空')
+                return  false
+            }
+            //2.修改验证码状态控制 禁用 防止再次点击获取
+            codeButtonState.value = true
+            codeButtonText.value = '发送中'
+            
+            //4.模拟网络延迟
+            timer_for_tab_menu.value = setTimeout(()=>{
+                //3.定义接口数据
+                const data = {username:ruleForm.username,mode:model.value}
+                getCode(data).then(res=>{
+                    //显示验证码
+                    root.$message.success('验证码:'+res.data.message)
+                    //5.验证码获取后才能点击登陆和注册按钮
+                    buttonState.value = false
+                    //6.成功后显示定时器60秒 倒计时结束后重新发送
+                    countDown(60)
+                }).catch(error=>{
+                })
+            },1000)
+        }) 
+
+        // 验证码按钮倒计时
+        const countDown = ((time)=>{
+            //判断定时器是否存在 存在清除上一个 重新开启定时器 
+            if(timer.value){
+                clearInterval(timer.value)
+            }
+            timer.value = setInterval(()=>{
+                time--
+                if(time === 0){
+                    //倒计时结束后开启按钮 并现显示重新获取
+                    clearInterval(timer.value)
+                    codeButtonState.value = false
+                    codeButtonText.value = '重新获取验证码'
+                }else{
+                    codeButtonText.value = `倒计时${time}秒`
+                }
+                
+            },1000)
+        })
+        //切换登陆注册时 还原验证码按钮
+        const clearCountDown = ()=>{
+            //还原定按钮状态 
+            codeButtonState.value = false
+            codeButtonText.value = '获取验证码'
+
+            //清空相关倒计时存储
+            clearInterval(timer.value)
+            clearTimeout(timer_for_tab_menu.value)  /* 如果在注册验证码按钮是 发送中 切换为登陆会后bug */
+        }
+
+        //并在切换模式时调用
+			clearCountDown()     
+
+9. 点击登陆注册相关业务
+    a) 点击提交
+        const submitForm = (formName => {
+                
+            refs[formName].validate((validResult, field) => {
+                if (validResult) {
+                    //根据模式判断执行登陆还是提交
+                    mode.value == 'login' ? doLogin() : doRegister()		
+                } else {
+                    console.log('error submit!!')
+                    return false;
+                }
+            })
+        })
+    b) 注册业务 邮箱多试几次/会给邮箱发送邮件
+        const doRegister = ()=>{
+            let registerData = {
+                username:ruleForm.username,
+                password:ruleForm.password,
+                code:ruleForm.code,
+                mode:'register',
+            }
+            register(registerData).then(res=>{
+                root.$message.success(res.data.message)
+                //注册成功切换到登陆模式
+                toggleMenu(menuTab[0])
+            }).catch(error=>{
+                
+            })	
+        }  
+
+        对应接口：(找机会 测试请求mock数据) 
+        export const register =(data)=>{
+            return axios.request({
+                url:'/register/',
+                method:'post',
+                data
+            })
+        }
+    c) 登陆业务
+        const doLogin = ()=>{   
+            let LoginData = {
+                username:ruleForm.username,
+                password:ruleForm.password,
+                code:ruleForm.code,
+                mode:'login',
+            }
+            login(LoginData).then(res=>{
+                root.$message.success(res.data.message)
+            }).catch(error=>{
+                
+            })	
+        }
+
+        对应接口：
+        export const login =(data)=>{
+            return axios.request({
+                url:'/login/',
+                method:'post',
+                data
+            })
+        }    
+
+
+   
+
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+

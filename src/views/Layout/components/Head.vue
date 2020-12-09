@@ -19,7 +19,7 @@
 </script>
 
 <style lang='scss' scoped>
-@import '../../../styles/config.scss';	
+	
 #header-wrap{
 	position: fixed;
 	top:0px;

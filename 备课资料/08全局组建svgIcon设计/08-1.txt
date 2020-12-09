@@ -1,0 +1,172 @@
+1.菜单前的图标问题
+    a)使用elementui图标 
+        meta:{
+            name:'信息管理',
+            icon:'el-icon-user'
+        },
+        <i :class="item.meta.icon"></i>
+
+    b) 使用全局组件设计图标 因为图标可能在任何地方都会用到，如果是局部组件就会很麻烦
+
+    c) 全局组件测试：（main.js中注册）
+        1.方式一：不推荐
+            Vue.component('Demo',{
+                template: `
+                  <div>
+                    <button >{{ msg }}</button>
+                  </div>`,
+              data: function() {
+                return {
+                  msg:"后台管理系统"
+                }
+              }
+            })
+
+
+        2.方式二：组册全局组建 推荐
+
+            //定义在icons/index.js中注册    
+            import Vue from "vue"; 
+            import SvgIcon from './SvgIcon.vue'
+            //生命全局组件
+            Vue.component('svg-icon',SvgIcon)
+           --------------------------------- 
+           //定义icons/SvgIcon.vue
+            <template>
+               <div>{{msg}}</div>
+            </template>
+            <script>
+                export default {
+                    setup:(props,{})=>{
+                        return {
+                            msg:'xxx'
+                        }
+                    }
+                }
+                </script>
+    e) 制作图标全局组建
+        1. 打开iconfont图标库网站，点击图标下载，选择svg格式
+        2. 将图标拷贝到项目icons/svg中 将提前准备好的svg拷贝过来
+        3. 解析svg 文件 (参考ppt)
+           
+            //1.读取文件目录
+            const files = require.context('./svg', false, /\.svg$/); // 获取当前svg目录所有为.svg结尾的文件
+            //console.log(files.keys()) //获取文件资源
+
+            //2.解析svg 文件 
+            const res = files.keys().map(files);  // 解析获取的.svg文件的文件名称
+
+            //3.配置 svg 解析的 loader
+            /*
+                chainWebpack: (config) => {
+                    const svgRule = config.module.rule("svg");     
+                    svgRule.uses.clear();     
+                    svgRule
+                    .use("svg-sprite-loader")
+                    .loader("svg-sprite-loader")
+                    .options({ 
+                        symbolId: "icon-[name]",
+                        include: ["./src/icons"] 
+                    });
+                },
+            */
+
+            //4. 下载相关的loader 
+            /*
+                npm install svg-sprite-loader  -S
+            */
+
+        5.修改组件 SvgIcon 来生成一个icon
+            <svg :class="svgClass" aria-hidden="true">
+                <use :xlink:href="iconName"></use>
+            </svg>   
+            <script>
+                export default (){
+                    setup(props){
+                        const iconName = ref('#icon-console')
+                        const svgClass = ref('svg-icon')
+                        return {
+                            iconName,
+                            svgClass
+                        }
+                    }
+                } 
+            </script> 
+            
+            <style lang='scss' scoped>
+                .svg-icon {
+                    width: 1em;
+                    height: 1em;
+                    font-size: 20px;
+                    fill:currentcolor; //以color属性渲染图标
+                    color:#fff;
+                }	
+            </style>
+
+        6. 使用props的时候在SvgIcon中传入对应的属性来显示那个icon
+            //1在路由中添加 icon：menu 等属性
+
+            //2.在SvgIcon组件中传递属性
+                <svg-icon :iconClass='item.meta.icon' :className='item.meta.icon'/>
+            //3.SvgIcon组件使用props接收
+                import {reactive,ref,computed} from '@vue/composition-api'
+                export default {
+                    //简化
+                    //props:['iconClass','className'],
+                    // 标准
+                    props:{ 
+                        iconClass:{
+                            type:String,
+                            defualt:''
+                        },
+                        className:{
+                            type:String,
+                            default:''
+                        }
+                    },
+                    setup:(props,{})=>{
+                        //根据不同的props 计算得到不同的图标和class
+                        const iconName = computed(() => `#icon-${props.iconClass}`)
+                        const svgClass = computed(() => {
+                            //svg-icon 是所有图标通用样式  也预留了各个图标的自定义方式
+                            if(props.className) {
+                                return `svg-icon ${props.className}`  
+                            }else{
+                                return `svg-icon`
+                            }
+                        })
+                        return {
+                            iconName,
+                            svgClass
+                        }
+                    }
+                }
+                </script>
+                <style>
+                    //测试图标的颜色
+                    .user{
+                        color:red; 
+                    }
+                </style>
+
+        7. 根据PPT讲解计算属性（补充）       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+            

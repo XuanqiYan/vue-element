@@ -19,7 +19,6 @@ export default {
 			type:String,
 			default:''
 		}
-		
 	},
 	setup:(props,{})=>{
 		//获取父组件的传参
@@ -34,7 +33,7 @@ export default {
 		        return `svg-icon`
 		    }
 		})
-		
+    
 		return {
 		    iconName,
 		    svgClass
@@ -51,5 +50,9 @@ export default {
 	fill:currentcolor;
 	color:#fff;
    
-}	
+}
+.user{
+   color:#fff;  //测试图标颜色
+}
+
 </style>

@@ -1,0 +1,210 @@
+commit : 55216c4 vue3.0改写以上业务
+1. 安装3.0的依赖
+    npm install @vue/composition-api --save
+    Main.js：
+    import VueCompositionApi from '@vue/composition-api'; Vue.use(VueCompositionApi);
+
+2. 讲解setup  composition-api的主入口
+    setup(props,context){ 
+        a) 放置内容 ：定义data数据  生命周期等  自定义方法methods
+            注意：定义的这些东西要在模板中使用 必须return 出去
+        b) props 属性是父组建参数 
+        c)  
+            context.attrs  --> this.$attrs -->  包含了父作用域中不作为 prop 被识别 (且获取) 的特性绑定 (class 和 style 除外) 
+                                                并且可以通过 v-bind="$attrs" 传入内部组件
+            context.slots  --> this.$slots  -->  访问具名插槽
+            context.parent --> this.$parent -->  代表父组件的实例对象, 访问父组建属性：this.$parent.data属性名 /访问父组建方法：this.$parent.method方法名 
+
+            context.root   --> this.$roots  -->  访问根组建
+            context.emit   --> this.$emit   --> 子组建发射一个方法
+            context.refs   --> this.$refs   --> 子组建的所有引用节点
+            ....
+
+        d) 声明引用类型时使用:reactive （引用类型：object arry function）
+            import {reactive} from 'vue/composition-api'
+
+            const obj_reactive = reactive({x:1,y:2})  
+            console.log(obj_reactive.x) //1
+            obj_reactive.x=10;    //修改
+            console.log(obj_reactive.x)  //输出
+
+        e) 生命基本类型时使用：ref  （基本类型：string number boolean  ）
+            import {ref} from 'vue/composition-api'
+
+            const obj_ref = ref('nice')   //目的是为了保持响应性
+            获取值：obj.value
+            设置值：obj.value = 'xxx'
+
+            //但是在模板中使用的话不需要 .vlaue
+
+        f) 判断是否是一个基本数据类型
+            console.log(isRef(obj_ref) ? 'yes':'no')
+
+        g) 生命周期vue2.0 和 3.0的差别
+            1/写法上加了on关键词 
+               
+                setup(){
+                    //生命周期 挂在完成后执行
+                    onMounted(()=>{
+
+                    })
+                }
+
+            2/删除了一些原有的生命周期
+            3/去除了methods 改写为普通函数
+                methods:{
+                    test(val){
+                        return val
+                    }
+                }
+
+                setup(){
+                    const test = ((val)=>{ //等价于下面写法
+                        return val
+                    }) 
+                    const test = (val)=>{
+                        return  val
+                    }
+                    return {
+                        test
+                    }
+                }
+
+    }
+
+
+3. 使用vue3.0 改写login 业务
+        setup(props,{refs}){
+           
+            //验证邮箱
+			let validateUsername = (rule, value, callback) => {
+				
+				//过滤非法字符
+				ruleForm.username = value = _email(value) 
+				if (value === '') {
+					callback(new Error('邮箱不能为空'));
+				} else if(!validate_email(value)){
+					callback(new Error('邮箱格式不正确'))
+				} else {
+					callback();
+				}
+			}
+			//验证密码
+			let validatePassword= (rule, value, callback) => {
+				ruleForm.password = value = _inputValue(value) 
+				
+				if (value === '') {
+					callback(new Error('请再次输入密码'))
+				} else if (!validate_password(value)) {
+					callback(new Error('密码为6至20位数字+字母'))
+				} else {
+					callback()
+				}
+			}
+			//验证验证码
+			let checkCode = (rule, value, callback) => {
+				ruleForm.code = value = _inputValue(value) 
+				if (value === '') {
+					callback(new Error('请输入验证码'))
+				} else if (!validate_code(value)) {
+					callback(new Error('验证码为4为数字'))
+				} else {
+					callback()
+				}
+			}
+			//验证重复密码
+			let validatePasswords = (rule, value, callback) => {
+				//如果mode等于login的话 需要跳过
+				if(mode.value ==='login') {
+					callback()
+				}
+				ruleForm.passwords = value = _inputValue(value) 
+				
+				if (value === '') {
+					callback(new Error('请输入重复密码'))
+				} else if (value!=ruleForm.password) {
+					callback(new Error('两次密码不一致'))
+				} else {
+					callback()
+				}
+			}
+			
+			//定义菜单
+			const  menuTab  = reactive([{
+					text: '登陆',
+					current: true,
+					type:'login'
+				},
+				{
+					text: '注册',
+					current: false,
+					type:'register'
+				}
+			])
+			//当前模块
+			const mode  = ref('login')
+			//表单数据对象
+			const ruleForm = reactive({
+				username: '',
+				password: '',
+				code: '',
+				passwords:''
+			})
+			//验证规则
+			const rules = reactive({
+				username: [{
+					validator: validateUsername,
+					trigger: 'blur'
+				}],
+				password: [{
+					validator: validatePassword,
+					trigger: 'blur'
+				}],
+				code: [{
+					validator: checkCode,
+					trigger: 'blur'
+				}],
+				passwords: [{
+					validator: validatePasswords,
+					trigger: 'blur'
+				}],
+			})
+            
+           
+			//切换模式函数
+			const toggleMenu = (currentItem => {
+				menuTab.map(item => {
+					item.current = false
+				})
+				currentItem.current = true
+				//修改模块
+				mode.value = currentItem.type
+			})
+			//提交实现
+			const submitForm = (formName => {
+
+				refs[formName].validate((validResult, field) => {
+			
+					if (validResult) {
+						alert('submit!');
+					} else {
+						console.log('error submit!!')
+						return false;
+					}
+				})
+            })
+            
+			
+			return {
+				menuTab,
+				mode,
+				ruleForm,
+				rules,
+				toggleMenu,
+                submitForm,
+			}
+			
+		}
+
+    
+

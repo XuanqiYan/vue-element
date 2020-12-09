@@ -1,6 +1,5 @@
 import Vue from "vue";
 import SvgIcon from './SvgIcon.vue'
-
 Vue.component('svg-icon',SvgIcon)
 
 
@@ -16,7 +15,7 @@ const files = require.context('./svg', false, /\.svg$/); // 获取当前svg
 //console.log(files.keys()) //获取文件资源
 
 //2.解析svg 文件 
-const res = files.keys().map(files);  // 解析获取的.svg文件的文件名称
+const res = files.keys().map(files);  // 解析获取的.svg文件的文件名称 交给webpack处理 
 
 //3.配置 svg 解析的 loader
 /*

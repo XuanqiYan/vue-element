@@ -1,0 +1,278 @@
+首页内子路由的设计 （commit : svg图组件 首页布局完成 3fedaa2）
+
+    1.集成子路由
+        a) 修改路由
+            {
+                path: '/home',
+                name: 'home',
+                component:  () => import('../views/Layout/index.vue'),
+                children:[
+                    {
+                        path: '/index',
+                        name: 'HomeIndex',
+                        component: () => import('../views/Home/index.vue')
+                    }
+                ]
+            },
+        b)新建 src/views/Home/index.vue
+            <template>
+                <div>控制台首页</div>
+            </template>
+            <script>
+            export default {
+                
+            }
+            </script>
+            <style lang="scss" scoped>
+            </style>
+
+        c) 默认显示第一个子路由
+            {
+                path: '/home',
+                name: 'home',
+                component:  () => import('../views/Layout/index.vue'),
+                rediert:'/index',  // 添加此处重定向
+                children:[
+                    {
+                        path: '/index',
+                        name: 'HomeIndex',
+                        component: () => import('../views/Home/index.vue')
+                    }
+                ]
+            }
+
+    2.集成 Nav 的菜单列表 （参考原型图）
+        a) logo集成
+                <div id="nav-wrap">
+            	    <h1 class="logo"><img src="../../../assets/logo.png" alt=""></h1>
+                </div>   
+
+                .logo {
+                    text-align: center;
+                    img { 
+                        margin: 28px auto 25px;
+                        width: 72px;
+                    }
+                } 
+
+        b) 技术选型 : elementUi -->  navMenu 菜单导航 —-> 折叠导航             
+            
+        c) 拷贝模板并修改
+            1.拷贝模板到 Nav 组件中 
+            2.移除相关方法    @open="handleOpen" @close="handleClose" 
+              设置为展开模式  collapse="true"
+            3.调整  背景颜色->透明 / 文字颜色->白色  / 选中颜色->白色
+            2.保留导航一 删除其他导航
+            3.在导航一中 保留第一个分组
+            4.移动子菜单到一级菜单下,形成如下模板
+
+            <el-menu default-active="1-4-1" class="el-menu-vertical-demo"  
+                background-color="transparent"  
+                text-color="#fff" 
+                active-text-color="#fff"  
+            >
+                
+                <el-submenu index="1">
+                    <!-- 一级菜单 -->
+                    <template slot="title">
+                        <i class="el-icon-location"></i>
+                        <span slot="title">导航一</span>
+                    </template>
+                    <!-- 子菜单  -->
+                    <el-menu-item index="1-1">选项1</el-menu-item>
+                    <el-menu-item index="1-2">选项2</el-menu-item>
+                </el-submenu>
+
+            </el-menu>
+
+        d) 菜单路由遍历输出
+                1.获取菜单路由对象
+                    export default{
+                        name:'navMenu'
+                        setup(props,{root}){
+
+                            console.log(root.$router) // 打印路由整体对象
+                            console.log(root.$router.options.routes) //打印具体路由数组
+                            
+                            const router = reactive(root.$router.options.routes)
+                            return {
+                                router
+                            }
+                        }
+                    }
+
+        e) 根据原型图片完善路由 并设计相关的组件页面
+            const routes = [
+                    {
+                        path: '/',
+                        redirect: "/home",
+                        hidden:true, //自定义属性 是否在菜单中显示
+                        meta:{
+                            name:'主页',	
+                        }
+                    },
+                    {
+                        path: '/login',
+                        name: 'login',
+                        hidden:true,
+                        meta:{
+                            name:'登陆'
+                        },
+                        component: () => import('../views/Login/index.vue')
+                    },
+                /*
+                    首页
+                */
+                    {
+                        path: '/home',
+                        name: 'home',
+                        hidden:false,
+                        redirect:'/index',
+                        meta:{
+                            name:'控制台',
+                            icon:'console'
+                        },
+                        component: () => import('../views/Layout/index.vue'),
+                        children:[
+                            {
+                                path: '/index',
+                                name: 'HomeIndex',
+                                meta:{
+                                    name:'首页'
+                                },
+                                component: () => import('../views/Home/index.vue')
+                            }
+                        ]
+                    },
+                /*
+                    信息管理
+                */
+                    {
+                        path: '/info',
+                        name: 'info',
+                        hidden:false,
+                        meta:{
+                            name:'信息管理',
+                            icon:'info'
+                        },
+                        component:  () => import('../views/Layout/index.vue'),
+                        children:[
+                            {
+                                path: '/infoIndex',
+                                name: 'InfoIndex',
+                                meta:{
+                                    name:'信息管理'
+                                },
+                                component: () => import('../views/Info/index.vue')
+                            },
+                            {
+                                path: '/infoCate',
+                                name: 'InfoCate',
+                                meta:{
+                                    name:'信息分类'
+                                },
+                                component: () => import('../views/Info/cate.vue')
+                            }
+                        ]
+                    },
+                /*
+                    用户管理
+                */
+                    {
+                        path: '/user',
+                        name: 'User',
+                        hidden:false,
+                        meta:{
+                            name:'用户管理',
+                            icon:'user'
+                        },
+                        component:  () => import('../views/Layout/index.vue'),
+                        children:[
+                            {
+                                path: '/userIndex',
+                                name: 'UserIndex',
+                                meta:{
+                                    name:'用户管理'
+                                },
+                                component: () => import('../views/User/index.vue')
+                            },
+                            {
+                                path: '/userCate',
+                                name: 'UserCate',
+                                meta:{
+                                    name:'用户分类'
+                                },
+                                component: () => import('../views/User/cate.vue')
+                            }
+                        ]
+                    }
+                    
+                ]
+
+        f) 遍历输出路由
+            <template  v-for='(item,index) in router' > 
+				<el-submenu :index="index + ''" v-if='!item.hidden' :key='item.id' ><!--此处判断v-if路由是否要显示 不能和 v-for放在一起使用  -->
+					<template slot="title">
+						<span slot="title">{{item.meta.name}}</span>
+					</template>
+					<el-menu-item-group> <!--  此处的标签需不需要增加 ？？？ --->
+						<el-menu-item index="1-1" v-for='(_item,_index) in item.children' :key='_item.id'>{{_item.meta.name}}</el-menu-item>
+					</el-menu-item-group>
+				
+				</el-submenu>
+			</template> 
+
+        g) 子路由跳转
+            参考 elementui api   --》 router --》是否使用 vue-router 的模式，默认不启用，启用该模式会在激活导航时以index作为 path 进行路由跳转  
+
+            所以修改：
+                <el-menu route />
+                    <el-menu-item  :index="_item.path" />
+
+            点击子路由正常能加载组件到main中
+
+        h) 点击子路由选中效果
+            1/element没有提供选中效果
+            2/点击观察dom元素 选中后会在标签中添加（ class = is-active ）
+            3/自定义is-active
+                <style>         
+                    .el-submenu .el-menu-item {
+                        //二级菜单字体大小
+                        font-size: 10px !important;  //需要添加权重 否则不显示
+                        //左边偏移量  
+                        padding-left: 60px !important;
+                        //选中效果
+                        &.is-active {
+                            background-color:rgba(245, 108, 108, 0.4) !important; //背景颜色
+                        }	  
+                    }
+                </style>
+
+            4. 抽离	 所有对elementui的样式修改 /src/styles/element.scss    
+                    //选中二级菜单的样式
+                        .el-submenu .el-menu-item {
+                            font-size: 10px !important; 
+                            padding-left: 60px !important;
+                            &.is-active {
+                                background-color:rgba(245, 108, 108, 0.4) !important; //背景颜色
+                            }	  
+                        }
+                    //被选中一级菜单的样式 
+                        通过控制台观察 一级菜单展开添加.is-opened 被选中添加is-active所以如下修改
+                        li.el-submenu {
+                            &.is-active.is-opened { 
+                                .el-submenu__title {                        --> 此处不写将改变整个菜单的背景
+                                    background-color:  #f56c6c !important;  --> 此处配置主题色：$mainColor: #f56c6c
+                                }  
+                            }
+                        } 
+
+                在main.scss中引入
+                    @import "./element.scss";        
+
+
+
+
+
+
+                    

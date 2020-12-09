@@ -1,0 +1,118 @@
+首页路由集成 （commit :首页布局/配置scss/样式styles文件设置  8acc7a2）
+
+    1.配置首页路由
+        {
+            path: '/home',
+            name: 'home',
+            component:  () => import('../views/Layout/index.vue')
+	    } 
+    2.页面 /views/Layout/index.vue
+       <p>首页</p> 
+       ....
+
+    3.登陆后跳转 （清空路由守卫）
+        //跳转首页
+        root.$router.push({
+                name:'Home'
+        }) 
+
+    4.根据原型图拆分子组建
+        <template>
+            <div>
+                <LayoutHeader />	
+                <LayoutNav />
+                <LayoutMain /> 
+            </div>	
+        </template>
+
+        <script>
+        import LayoutHeader from './components/Head.vue'	
+        import LayoutNav from './components/Nav.vue'	
+        import LayoutMain from './components/Main.vue'	
+        export default {
+            name:'layout',    
+            components:{ LayoutHeader, LayoutNav ,LayoutMain },
+            setup(){
+
+            }  
+        }
+    5.布局  LayoutNav 组建
+       <template>
+            <div id="nav-wrap">
+                nav
+            </div>
+        </template> 
+        <style lang="scss" scoped>
+        #nav-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width:250px;                /*     $navMenu     */
+            background-color: # ;
+        }
+
+        </style> 
+
+    6.布局 LayoutHeader 头部
+        <template>
+            <div id='header-wrap'>
+                header
+            </div>
+        </template>
+        <style lang='scss' scoped>
+        #header-wrap{
+            position: fixed;
+            top:0px;
+            left:250px;
+            right:0px;
+            height:75px                     /*   $layoutHeader;   */
+            background:#fff;
+            -webkit-box-shadow: 0 3px 16px 0 rgba(0,0,0,.1); //边框阴影	
+        }	
+            
+        </style>     
+
+    7.布局 LayoutMain 内容区
+        <template>
+            <div id='main-wrap'>
+                <div>content</div>
+                
+            </div>	
+        </template>
+        <style lang='scss' scoped>
+        #main-wrap{
+            position: fixed;
+            left:25px;                      /*    $navMenu;    */
+            top:75px;                       /*    $layoutHeader;   */
+            right:0px;
+            bottom:0px;
+            border:30px solid #f7f7f7;
+            border-bottom:none; //底部没有边框       
+        }	
+            
+        </style>
+
+    8.抽离关键的样式
+        1.src/styles/main.scss 中
+            @import "./config.scss"; //倒入变量文件
+            @import "./common.scss";
+        2. 定义变量文件 config.scss
+            // 菜单宽度
+            $navMenu: 250px;
+            $navMenuMin: 64px;
+            $layoutHeader: 75px;
+            // 主颜色
+            $mainColor: #f56c6c;
+
+    9.将上述的一些变量抽离  （4处）     
+
+
+    
+
+        
+        
+
+
+
+

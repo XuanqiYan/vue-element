@@ -1,0 +1,364 @@
+1.表单集成 
+    点击（element-ui--》form 表单--》 自定义验证规则）
+    拷贝代码到组件中
+
+2. 调整表单样式
+    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="密码" prop="pass">
+            <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
+            <el-button @click="resetForm('ruleForm')">重置</el-button>
+        </el-form-item>
+    </el-form>
+
+    a) 调整size="medium"
+    b) 调整左侧label位置 为上边 
+        1.移除label="密码"
+        2.看到文字消失 但是还占据位置
+            移除form标签 label-width="100px" 属性
+        3.自定义label
+            <el-form-item  prop="pass">
+                <label>密码</label>
+                <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+            </el-form-item> 
+        4.调整样式
+            移除form标签 class="demo-ruleForm" 属性 --》改为--》class="login_form"
+
+        	.login_form {
+                label {
+                    display: block;
+                    font-size: 14px;
+                    margin-bottom: 3px;
+                    color: #fff;
+                }
+            }
+    c) 调整每一个选项之间的间距
+         <el-form-item  prop="pass" class='form_item'>
+         </el-form-item> 
+        
+        .login_form {
+            ...    
+            .form_item{
+                margin-bottom: 13px;
+            } 
+        } 
+    d) 调整button 按钮
+        1.删除reset按钮和对应的方法
+        2.改变登陆按钮颜色
+             <el-button type="danger" />
+        3.改变button的宽度为100%
+            <el-button type="danger" class='block' />     
+            .login_form {
+                ...
+                .block{
+                    display:block;
+                    width:100%
+                }
+            } 
+
+    e) 集成验证码
+        参考 布局layout：分栏间隔 
+        
+         <el-form-item  prop="pass">
+            <label>验证码</label>
+                <el-row :gutter="20">
+                    <el-col :span="15">
+                        <el-input type="text" v-model="ruleForm.age" ></el-input>
+                    </el-col>
+                    <el-col :span="9">
+                        <el-button type="success" class='block' >获取验证码</el-button>
+                    </el-col>
+                </el-row>
+        </el-form-item> 
+        注意：button上的class='block'   
+
+3. 表单业务（讲解表单验证原理）
+    
+    <el-form-item label="密码" prop="pass">
+        <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+    </el-form-item>
+    
+    data(){
+        return {
+            ruleForm: {
+			    pass: '',   --- 》》》 a) 属性：v-model="ruleForm.pass" 绑定的是默认值
+	        },
+            rules: {
+					pass: [   --- 》》》 b）属性：prop="pass" 
+                        {
+						    validator: validatePass, 验证方式
+						    trigger: 'blur' //失去焦点时验证
+					    }
+                    ]
+				}
+        }
+    }
+    c)  /*
+            rule   ：验证字段
+            value  ： 输入的值
+            callback: 回调函数 
+        */
+        var validatePass = (rule, value, callback) => {
+
+            if (value === '') {
+                callback(new Error('请输入密码')); //验证失败
+            } else {
+                if (this.ruleForm.checkPass !== '') {
+                    this.$refs.ruleForm.validateField('checkPass'); 
+                }
+                callback();  //验证成功
+            }
+        };
+4. 根据原型图实现表单的dom 和校验字段 （参考代码 ）
+    邮箱
+    密码   minlength='6' maxlength='20' 
+    验证码 
+    登陆按钮
+    <template>
+        <div id='login'>
+            <div class="login-wrap">
+                <ul class="menu-tab">
+                    <li :class='{"current": item.current}' :key='item.id' v-for='item in menuTab' @click='toggleMenu(item)'>{{item.text}}</li>
+                </ul>
+                <!--表单开始-->
+                <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" class="login_form">
+
+                    <el-form-item prop="username" class='form-item'>
+                        <label>邮箱</label>
+                        <el-input type="text" v-model="ruleForm.username"></el-input>
+                    </el-form-item>
+
+                    <el-form-item prop="password" class='form-item' >
+                        <label>密码</label>
+                        <el-input type="text" v-model="ruleForm.password" minlength='6' maxlength='20'></el-input>
+                    </el-form-item>
+
+                    <el-form-item prop="code" class='form-item' >
+                        <label for="">验证码</label>
+                        <el-row :gutter="10">
+                            <el-col :span="15">
+                                <el-input v-model="ruleForm.code" minlength='4' maxlength='4'></el-input>
+                            </el-col>
+                            <el-col :span="9">
+                                <el-button type="success" class='block' >获取验证码</el-button>
+                            </el-col>
+                            
+                        </el-row>
+                        
+                    </el-form-item>
+
+                    <el-form-item>
+                        <el-button type="danger" @click="submitForm('ruleForm')" class=' margin-top-19 block'>提交</el-button>
+                    </el-form-item>
+                </el-form>
+                <!--表单结束-->
+            </div>
+        </div>
+    </template>
+
+    <script>
+        import {_email,_inputValue} from '@/utils/validate.js'
+        export default {
+            data() {
+                //验证邮箱
+                var validateUsername = (rule, value, callback) => {
+                    let  reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/
+                    if (value === '') {
+                        callback(new Error('邮箱不能为空'));
+                    } else if(!reg.test(value)){
+                        callback(new Error('邮箱格式不正确'))
+                    } else {
+                        callback();
+                    }
+                }
+                //验证密码
+                var validatePassword= (rule, value, callback) => { 
+                    let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
+                    if (value === '') {
+                        callback(new Error('请再次输入密码'))
+                    } else if (!reg.test(value)) {
+                        callback(new Error('密码为6至20位有效数字和字母'))
+                    } else {
+                        callback()
+                    }
+                }
+                //验证验证码
+                var checkCode = (rule, value, callback) => {
+                    let reg = /^[0-9]{4}$/
+                    if (value === '') {
+                        callback(new Error('请输入验证码'))
+                    } else if (!reg.test(value)) {
+                        callback(new Error('验证码为4为数字'))
+                    } else {
+                        callback()
+                    }
+                }
+                
+                return {
+                    menuTab: [{
+                            text: '登陆',
+                            current: false
+                        },
+                        {
+                            text: '注册',
+                            current: true
+                        }
+                    ],
+                    ruleForm: {
+                        username: '',
+                        password: '',
+                        code: ''
+                    },
+                    rules: {
+                        username: [{
+                            validator: validateUsername,
+                            trigger: 'blur'
+                        }],
+                        password: [{
+                            validator: validatePassword,
+                            trigger: 'blur'
+                        }],
+                        code: [{
+                            validator: checkCode,
+                            trigger: 'blur'
+                        }]
+                    }
+
+                }
+            },
+            methods: {
+                toggleMenu(currentItem) {
+                    this.menuTab.map(item => {
+                        item.current = false
+                    })
+                    currentItem.current = true
+                },
+                //提交表单
+                submitForm(formName) {
+                    //提交前调用validate方法校验表单所有字段
+                    this.$refs[formName].validate((validResult, field) => { // validResult（boolean）校验结果以及未通过校验字段
+
+                        if (validResult) {
+                            alert('submit!');
+                        } else {
+                            console.log('error submit!!')
+                            return false;
+                        }
+                    })
+                },
+
+            }
+        }
+    </script>        
+
+5. 对特殊字符过滤 
+    a)新建uitls/validate.js
+        /*
+            过滤输入非法字符
+        */
+        export const _inputValue = (s) => {
+            var pattern = new RegExp("[`~!@.#$^&*()=|{}':;',\\[\\]<>/?~！%_+ #￥……&*（）——|{}【】‘；：”“'。，、？]")
+            var rs = "";
+            for (var i = 0; i < s.length; i++) {
+                rs = rs + s.substr(i, 1).replace(pattern, '');
+            }
+            return rs;
+        }
+        //邮箱的格式中@ 和 .是合法字符
+        export const _email = (s) => {
+            var pattern = new RegExp("[`~!#$^&*()=|{}':;',\\[\\]<>/?~！%_+ #￥……&*（）——|{}【】‘；：”“'。，、？]")
+            var rs = "";
+            for (var i = 0; i < s.length; i++) {
+                rs = rs + s.substr(i, 1).replace(pattern, '');
+            }
+            return rs;
+        }
+    b）引入并使用
+    import {_email,_inputValue} from '@/utils/validate'
+    
+    //验证邮箱
+    var validateUsername = (rule, value, callback) => {
+        //改变表单的输入         //按照过滤后的字符串校验
+        this.ruleForm.username = value = _email(value) 
+        ....
+    }
+
+6）提取验证规则 (commit :7056b1 抽离验证表单规则/重复密码切换的消失隐藏)
+    
+    参考代码  
+
+7) 添加重复密码相关逻辑
+    a) 添加dom 和相关js 变量
+        <!--此处v-show会有bug 因为登陆隐藏重复密码 但是还是要验证 用v-if就不会 -->
+        <el-form-item prop="passwords" class='form-item' v-show= "mode ==='register'">
+            <label>重复密码</label>
+            <el-input type="text" v-model="ruleForm.passwords" minlength='6' maxlength='20'></el-input>
+        </el-form-item>       
+
+    b) state中添加 mode 变量控制现实的模式 
+            menuTab: [
+                {
+                    text: '登陆',
+                    current: false,
+                    type:'login' //增加
+                },
+                {
+                    text: '注册',
+                    current: true,
+                    type:'register' //增加
+                }
+            ],
+            mode : state //增加
+
+
+    c) 点击切换函数中修改代码
+        toggleMenu(currentItem) {
+            this.menuTab.map(item => {
+                item.current = false
+            })
+            currentItem.current = true
+            //修改模块
+            this.mode = currentItem.type
+        },
+    d) 添加重复密码验证规则
+        var validatePasswords = (rule, value, callback) => {
+            //如果mode等于login的话 需要跳过 配合v-show
+            if(this.mode ==='login') {
+                callback()
+            }
+            this.ruleForm.passwords = value = _inputValue(value) 
+            
+            if (value === '') {
+                callback(new Error('请输入重复密码'))
+            } else if (value!=this.ruleForm.password) {
+                callback(new Error('两次密码不一致'))
+            } else {
+                callback()
+            }
+        }    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+

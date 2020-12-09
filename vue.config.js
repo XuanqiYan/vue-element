@@ -17,7 +17,7 @@ module.exports = {
 		.use("svg-sprite-loader")
 		.loader("svg-sprite-loader")
 		.options({ 
-			symbolId: "icon-[name]",
+			symbolId: "icon-[name]", //图标的id
 			include: ["./src/icons"] 
 		});
 	},

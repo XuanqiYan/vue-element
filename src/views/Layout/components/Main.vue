@@ -1,7 +1,7 @@
 <template>
 	<div id='main-wrap'>
 		<div class='main-content'>
-			<div class="content">
+			<div >
 				<router-view/>
 			</div>
 		</div>
@@ -13,15 +13,12 @@
 </script>
 
 <style lang='scss' scoped>
-@import '../../../styles/config.scss';	
 /* #main-wrap{
 	position: fixed;
-	
 	left:$navMenu;
 	top:$layoutHeader;
 	right:0px;
 	bottom:0;
-	
 	border:30px solid #f7f7f7;
 	border-bottom:none;
 	

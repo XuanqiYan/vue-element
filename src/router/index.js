@@ -10,8 +10,7 @@ const routes = [
 		redirect: "/home",
 		hidden:true, //自定义属性 是否在菜单中显示
 		meta:{
-			name:'主页',
-			
+			name:'主页',	
 		}
 	},
 	{
@@ -35,7 +34,7 @@ const routes = [
 			name:'控制台',
 			icon:'console'
 		},
-		component:  () => import('../views/Layout/index.vue'),
+		component: () => import('../views/Layout/index.vue'),
 		children:[
 			{
 				path: '/index',
@@ -120,14 +119,14 @@ const router = new VueRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-	const isLogin = localStorage.ele_login ? true : false;
-	if (to.path == '/login') {
-		next()
-	} else {
-		// 是否在登录状态下
-		isLogin ? next() : next('/login');
-	}
-
+	// const isLogin = localStorage.ele_login ? true : false;
+	// if (to.path == '/login') {
+	// 	next()
+	// } else {
+	// 	// 是否在登录状态下
+	// 	isLogin ? next() : next('/login');
+	// }
+    next()
 })
 
 

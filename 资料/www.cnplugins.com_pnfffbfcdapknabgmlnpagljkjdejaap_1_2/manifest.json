@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "Justinmind Extension",
+  "description": "View Justinmind's prototypes locally from Google Chrome.",
+  "update_url": "https://clients2.google.com/service/update2/crx",
+  "version": "1.2",
+  "permissions": [
+    "tabs","<all_urls>"
+  ],
+  "page_action": {
+    "default_icon": "Justinmind_19x19.png"
+  },
+  "content_scripts" : [
+	{
+	  "matches" : [
+	  "file://*"
+	  ],
+	  "js" : ["jquery-1.10.2.min.js","contentscript.js"],
+	  "run_at" : "document_end",
+	  "all_frames" : false
+	}
+  ],
+  "icons" : {
+    "48" : "Justinmind_48x48.png",
+	"128" : "Justinmind_128x128.png"
+  },
+  "background" : {
+	"scripts": ["background.js"]
+  },
+   "web_accessible_resources": ["jquery-1.10.2.min.js"]
+}

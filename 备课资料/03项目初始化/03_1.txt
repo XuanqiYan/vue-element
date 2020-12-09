@@ -1,0 +1,113 @@
+1.了解vue2.0 和 vue3.0的差异
+    1、去除了 static、config、build
+    2、新增了 public
+    3、自动依赖node_modules
+    4、默认配置 webpack，通过 vue.config.js 修改
+    5、vue inspect 可查看webpack 默认配置
+    6、内置了 vue-cli-service serve 服务 2.0是没有的，需要安装的
+    7、浏览器打开图形界面，vue ui 查看
+
+
+2.配置 css的入口文件 //每次更改完需要重新启动项目 
+    
+    a)/src/styles/main.scss --》由于安装了loader 所以能解析
+
+    b)在main.js中引入
+        import './styles/main.acss'
+
+3. 创建配置文件 vue.config.js 
+        此处 App.vue中的样式必须保留 否则配置的css入口不生效
+        const path = require('path')
+        module.exports = { 
+            //b)
+                lintOnSave: false,    //es-lint  是否开启语法格式检查？ 
+            //a)
+                css: {  
+                    extract: true,  // 是否使用css分离插件 ExtractTextPlugin 如果为false每个组件的css独立 建议开启
+                    loaderOptions: {  // css预设器配置项
+                        scss: {
+                            prependData: `@import "./src/styles/main.scss";`
+                        }
+                    },
+                },
+            //c)
+                configureWebpack: (config) => {
+                    config.resolve = {
+                        extensions: ['.js', '.json', '.vue'],
+                        alias: {
+                            vue$: "vue/dist/vue.esm.js",
+                            "@": path.resolve(__dirname, "./src"),
+                            "public": path.resolve(__dirname, "./public"),
+                            "@c": path.resolve(__dirname, "./src/components")
+                        }
+                    }
+                }
+        }
+
+4. 在main.acss的引入文件中引入其他类型的scss 
+    @import './reset.scss'  （百度查看） 
+    ...后面还可能加载其他的css
+
+5. 添加登陆页面    /src/views/Login/index.vue 
+    this  is login page
+
+6. 修改路由文件
+    const routes = [
+        {
+            path: '/',
+            redirect:'/login'
+        },
+        {
+            path: '/login',
+            name: 'Login',
+            //使用懒加载这个页面
+            component: () => import('../views/Login.vue') 
+        }
+    ]
+
+7. 路由守卫控制为登陆定向
+    
+    router.beforeEach((to, from, next) => {
+        const isLogin = localStorage.ele_login ? true : false ;
+        if (to.path == '/login') {
+            next()
+        } else {
+            // 是否在登录状态下
+            isLogin ? next() : next('/login');
+        }
+    })
+
+8. 集成elementUI 
+    //安装依赖
+    npm i element-ui –S
+
+    //main.js全局引入
+    import ElementUI from 'element-ui' 
+    import 'element-ui/lib/theme-chalk/index.css'
+    //vue 使用
+    Vue.use(ElementUI)
+
+9. 编辑Login页面的样式    
+    集成button 按钮测试element
+
+10. 没开发完一个页面或者是一个小的功能 建议 形成commit 执行push 
+    在feature-vueAdmin-V1.0.0-20201130分支
+        git  add .
+        git commit -m '完成布局'
+        git pull
+
+        git push 
+            //可以成功 因为之前 执行了  
+            //git push --set-upstream origin feature-vueAdmin-V1.0.0-20201130    
+        
+
+
+
+
+
+
+
+
+
+
+        
